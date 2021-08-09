@@ -1,5 +1,6 @@
 package br.com.zupacademy.thiago.mercadolivre.usuario;
 
+import br.com.zupacademy.thiago.mercadolivre.validator.UniqueEmail;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.validation.Valid;
@@ -13,15 +14,12 @@ public class NovoUsuarioRequest {
 
     @NotBlank
     @Email
+    @UniqueEmail(modelo = Usuario.class, campo = "login")
     private String login;
 
     @NotNull
     @Valid
     private SenhaTextoSimples senha;
-
-    @NotNull
-    @PastOrPresent
-    private LocalDateTime dataCadastro;
 
     public NovoUsuarioRequest(String login, SenhaTextoSimples senha) {
         this.login = login;
@@ -32,11 +30,7 @@ public class NovoUsuarioRequest {
         return senha;
     }
 
-    public LocalDateTime getDataCadastro() {
-        return dataCadastro;
-    }
-
     public Usuario toUsuario() {
-        return new Usuario(login, senha, dataCadastro);
+        return new Usuario(login, senha, LocalDateTime.now());
     }
 }
