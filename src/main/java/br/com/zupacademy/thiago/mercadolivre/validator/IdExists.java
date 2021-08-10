@@ -10,12 +10,14 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(FIELD)
 @Retention(RUNTIME)
-@Constraint(validatedBy = UniqueEmailValidator.class)
-public @interface UniqueEmail {
+@Constraint(validatedBy = IdExistsValidator.class)
+public @interface IdExists {
 
-    String message() default "Já existe usuário cadastrado com o email informado";
     Class<?>[] groups() default { };
     Class<? extends Payload>[] payload() default { };
+
+    String message() default "O id informado não existe";
     Class<?> modelo();
     String campo();
+
 }

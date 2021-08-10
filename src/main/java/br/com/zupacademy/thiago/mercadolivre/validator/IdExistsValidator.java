@@ -4,13 +4,12 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.util.List;
 
 @Component
-public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail,String> {
+public class IdExistsValidator implements ConstraintValidator<IdExists, Long> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -19,26 +18,28 @@ public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail,Str
     private String campo;
 
     @Override
-    public void initialize(UniqueEmail constraintAnnotation) {
+    public void initialize(IdExists constraintAnnotation) {
         this.modelo = constraintAnnotation.modelo();
         this.campo = constraintAnnotation.campo();
     }
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
+    public boolean isValid(Long value, ConstraintValidatorContext context) {
+
+        if (value == null) {
+            return true;
+        }
 
         StringBuilder jpql = new StringBuilder();
         jpql.append(" SELECT m FROM ");
         jpql.append(this.modelo.getSimpleName());
         jpql.append(" m WHERE ");
         jpql.append(this.campo);
-        jpql.append(" = :value");
+        jpql.append(" = ");
+        jpql.append(value);
 
-        Query query = this.entityManager.createQuery(jpql.toString());
-        query.setParameter("value", value);
+        List<Object> result = this.entityManager.createQuery(jpql.toString()).getResultList();
 
-        List<Object> result = query.getResultList();
-
-        return result.size() == 0 ? true : false;
+        return result.size() == 0 ? false : true;
     }
 }
