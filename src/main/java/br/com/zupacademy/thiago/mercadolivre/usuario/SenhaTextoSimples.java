@@ -1,9 +1,8 @@
 package br.com.zupacademy.thiago.mercadolivre.usuario;
 
-import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class SenhaTextoSimples {
@@ -21,6 +20,6 @@ public class SenhaTextoSimples {
     }
 
     public String encode() {
-        return BCrypt.hashpw(this.texto, BCrypt.gensalt());
+        return new BCryptPasswordEncoder().encode(texto);
     }
 }
