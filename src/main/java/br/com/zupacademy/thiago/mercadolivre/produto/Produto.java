@@ -1,7 +1,9 @@
 package br.com.zupacademy.thiago.mercadolivre.produto;
 
 import br.com.zupacademy.thiago.mercadolivre.caracteristica.Caracteristica;
+import br.com.zupacademy.thiago.mercadolivre.caracteristica.NovaCaracteristicaRequest;
 import br.com.zupacademy.thiago.mercadolivre.categoria.Categoria;
+import br.com.zupacademy.thiago.mercadolivre.usuario.Usuario;
 
 import javax.persistence.*;
 import javax.validation.constraints.Positive;
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Entity
 public class Produto {
@@ -42,6 +45,12 @@ public class Produto {
     @ManyToOne
     private Categoria categoria;
 
+    @ManyToOne
+    private Usuario usuario;
+
+    @ElementCollection
+    private List<String> imagensLinks = new ArrayList<>();
+
     @Column(nullable = false)
     private LocalDateTime dataCadastro;
 
@@ -49,19 +58,26 @@ public class Produto {
     }
 
     public Produto(String nome, BigDecimal valor, int quantidadeDisponivel,
-                   List<Caracteristica> caracteristicas, String descricao,
-                   Categoria categoria, LocalDateTime dataCadastro) {
+                   List<NovaCaracteristicaRequest> caracteristicas, String descricao,
+                   Categoria categoria, Usuario usuario, LocalDateTime dataCadastro) {
         this.nome = nome;
         this.valor = valor;
         this.quantidadeDisponivel = quantidadeDisponivel;
-        this.caracteristicas.addAll(caracteristicas);
+        this.caracteristicas.addAll(caracteristicas.stream()
+                                .map(c -> new Caracteristica(c, this))
+                                .collect(Collectors.toList()));
         this.descricao = descricao;
         this.categoria = categoria;
+        this.usuario = usuario;
         this.dataCadastro = dataCadastro;
     }
 
-    public List<Caracteristica> getCaracteristicas() {
-        return caracteristicas;
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public List<String> getImagensLinks() {
+        return imagensLinks;
     }
 
     @Override

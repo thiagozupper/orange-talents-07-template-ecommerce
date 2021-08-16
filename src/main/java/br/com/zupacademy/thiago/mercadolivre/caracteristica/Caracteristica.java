@@ -25,13 +25,14 @@ public class Caracteristica {
     public Caracteristica() {
     }
 
-    public Caracteristica(String nome, String descricao) {
+    public Caracteristica(String nome, String descricao, Produto produto) {
         this.nome = nome;
         this.descricao = descricao;
+        this.produto = produto;
     }
 
-    public void setProduto(Produto produto) {
-        this.produto = produto;
+    public Caracteristica(NovaCaracteristicaRequest dto, Produto produto) {
+        this(dto.getNome(), dto.getDescricao(), produto);
     }
 
     @Override

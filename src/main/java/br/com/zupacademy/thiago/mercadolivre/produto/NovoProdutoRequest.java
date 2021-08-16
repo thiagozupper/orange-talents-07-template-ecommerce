@@ -1,16 +1,16 @@
 package br.com.zupacademy.thiago.mercadolivre.produto;
 
-import br.com.zupacademy.thiago.mercadolivre.caracteristica.Caracteristica;
+import br.com.zupacademy.thiago.mercadolivre.caracteristica.NovaCaracteristicaRequest;
 import br.com.zupacademy.thiago.mercadolivre.categoria.Categoria;
 import br.com.zupacademy.thiago.mercadolivre.categoria.CategoriaRepository;
+import br.com.zupacademy.thiago.mercadolivre.usuario.Usuario;
 import br.com.zupacademy.thiago.mercadolivre.validator.IdExists;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class NovoProdutoRequest {
 
@@ -27,7 +27,8 @@ public class NovoProdutoRequest {
 
     @NotNull
     @Size(min = 3)
-    private Map<@NotBlank String, @NotBlank String> caracteristicas;
+    @Valid
+    private List<NovaCaracteristicaRequest> caracteristicas;
 
     @NotBlank
     @Size(max = 1000)
@@ -37,12 +38,8 @@ public class NovoProdutoRequest {
     @IdExists(modelo = Categoria.class, campo = "id")
     private Long categoriaId;
 
-    public Map<String, String> getCaracteristicas() {
-        return caracteristicas;
-    }
-
     public NovoProdutoRequest(String nome, BigDecimal valor,
-                              int quantidadeDisponivel, Map<String, String> caracteristicas,
+                              int quantidadeDisponivel, List<NovaCaracteristicaRequest> caracteristicas,
                               String descricao, Long categoriaId) {
         this.nome = nome;
         this.valor = valor;
@@ -52,17 +49,17 @@ public class NovoProdutoRequest {
         this.categoriaId = categoriaId;
     }
 
-    public Produto toProduto(CategoriaRepository categoriaRepository) {
+    public List<NovaCaracteristicaRequest> getCaracteristicas() {
+        return caracteristicas;
+    }
+
+    public Produto toProduto(CategoriaRepository categoriaRepository, Usuario usuario) {
 
         Categoria categoria = categoriaRepository.findById(categoriaId).get();
 
-        List<Caracteristica> caracteristicas = new ArrayList<>();
-        for (var entry : this.caracteristicas.entrySet()) {
-            caracteristicas.add(new Caracteristica(entry.getKey(), entry.getValue()));
-        }
+        Produto produto = new Produto(nome, valor, quantidadeDisponivel, caracteristicas,
+                descricao, categoria, usuario, LocalDateTime.now());
 
-        return new Produto(this.nome, this.valor,
-                this.quantidadeDisponivel, caracteristicas,
-                this.descricao, categoria, LocalDateTime.now());
+        return produto;
     }
 }
