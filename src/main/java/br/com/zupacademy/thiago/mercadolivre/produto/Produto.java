@@ -3,6 +3,7 @@ package br.com.zupacademy.thiago.mercadolivre.produto;
 import br.com.zupacademy.thiago.mercadolivre.caracteristica.Caracteristica;
 import br.com.zupacademy.thiago.mercadolivre.caracteristica.NovaCaracteristicaRequest;
 import br.com.zupacademy.thiago.mercadolivre.categoria.Categoria;
+import br.com.zupacademy.thiago.mercadolivre.opiniao.Opiniao;
 import br.com.zupacademy.thiago.mercadolivre.usuario.Usuario;
 
 import javax.persistence.*;
@@ -11,9 +12,7 @@ import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -48,8 +47,11 @@ public class Produto {
     @ManyToOne
     private Usuario usuario;
 
-    @ElementCollection
-    private List<String> imagensLinks = new ArrayList<>();
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
+    private Set<ImagemProduto> imagens = new HashSet<>();
+
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
+    private List<Opiniao> opinioes = new ArrayList<>();
 
     @Column(nullable = false)
     private LocalDateTime dataCadastro;
@@ -72,14 +74,6 @@ public class Produto {
         this.dataCadastro = dataCadastro;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public List<String> getImagensLinks() {
-        return imagensLinks;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -91,5 +85,23 @@ public class Produto {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public boolean pertenceA(Usuario usuarioLogado) {
+        return this.usuario.equals(usuarioLogado);
+    }
+
+
+    public void associarLinks(Set<String> links) {
+
+        Set<ImagemProduto> imagens = links.stream()
+                .map(link -> new ImagemProduto(this, link))
+                .collect(Collectors.toSet());
+        this.imagens.addAll(imagens);
+    }
+
+    public void associarOpiniao(NovaOpiniaoRequest novaOpiniao, Usuario usuario) {
+        Opiniao opiniao = new Opiniao(novaOpiniao, usuario, this);
+        this.opinioes.add(opiniao);
     }
 }

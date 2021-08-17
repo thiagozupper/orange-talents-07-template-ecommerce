@@ -3,16 +3,14 @@ package br.com.zupacademy.thiago.mercadolivre.produto;
 import br.com.zupacademy.thiago.mercadolivre.categoria.CategoriaRepository;
 import br.com.zupacademy.thiago.mercadolivre.usuario.Usuario;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/produtos")
@@ -20,10 +18,13 @@ public class ProdutoController {
 
     private ProdutoRepository produtoRepository;
     private CategoriaRepository categoriaRepository;
+    private Uploader uploader;
 
-    public ProdutoController(ProdutoRepository produtoRepository, CategoriaRepository categoriaRepository) {
+    public ProdutoController(ProdutoRepository produtoRepository, CategoriaRepository categoriaRepository,
+                             Uploader uploader) {
         this.produtoRepository = produtoRepository;
         this.categoriaRepository = categoriaRepository;
+        this.uploader = uploader;
     }
 
     @PostMapping
@@ -33,24 +34,30 @@ public class ProdutoController {
         produtoRepository.save(produto);
     }
 
-    @PostMapping("/imagens")
-    public ResponseEntity<?> uploadImagens(@Valid UploadImagensProdutoRequest dto, Principal principal) {
+    @PostMapping("/{idProduto}/imagens")
+    @Transactional
+    public void uploadImagens(@PathVariable Long idProduto, @Valid NovasImagensRequest dto, Principal principal) {
 
-        Produto produto = produtoRepository.findById(dto.getIdProduto()).get();
-        Usuario usuario = getUsuarioLogado(principal);
-
-        if (!produto.getUsuario().getId().equals(usuario.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Você não tem permissão para alterar esse produto");
+        Usuario usuarioLogado = getUsuarioLogado(principal);
+        Produto produto = produtoRepository.findById(idProduto).get();
+        if (!produto.pertenceA(usuarioLogado)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        List<String> links = Arrays.stream(dto.getImagens())
-                .map(imagem -> "http://ml-storage/" + imagem.getOriginalFilename())
-                .collect(Collectors.toList());
-
-        produto.getImagensLinks().addAll(links);
+        Set<String> links = uploader.envia(dto.getImagens());
+        produto.associarLinks(links);
         produtoRepository.save(produto);
-        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{idProduto}/opinioes")
+    @Transactional
+    public void cadastrarOpiniao(@PathVariable Long idProduto,
+                    @RequestBody @Valid NovaOpiniaoRequest novaOpiniao, Principal principal) {
+
+        Produto produto = produtoRepository.findById(idProduto).get();
+        Usuario usuario = getUsuarioLogado(principal);
+        produto.associarOpiniao(novaOpiniao, usuario);
+        produtoRepository.save(produto);
     }
 
     private Usuario getUsuarioLogado(Principal principal) {
