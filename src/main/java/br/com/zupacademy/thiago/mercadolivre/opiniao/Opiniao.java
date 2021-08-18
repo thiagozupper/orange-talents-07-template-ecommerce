@@ -1,6 +1,5 @@
 package br.com.zupacademy.thiago.mercadolivre.opiniao;
 
-import br.com.zupacademy.thiago.mercadolivre.produto.NovaOpiniaoRequest;
 import br.com.zupacademy.thiago.mercadolivre.produto.Produto;
 import br.com.zupacademy.thiago.mercadolivre.usuario.Usuario;
 

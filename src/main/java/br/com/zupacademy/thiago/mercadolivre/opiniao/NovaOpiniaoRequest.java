@@ -1,4 +1,4 @@
-package br.com.zupacademy.thiago.mercadolivre.produto;
+package br.com.zupacademy.thiago.mercadolivre.opiniao;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;

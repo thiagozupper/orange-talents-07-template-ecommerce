@@ -3,7 +3,10 @@ package br.com.zupacademy.thiago.mercadolivre.produto;
 import br.com.zupacademy.thiago.mercadolivre.caracteristica.Caracteristica;
 import br.com.zupacademy.thiago.mercadolivre.caracteristica.NovaCaracteristicaRequest;
 import br.com.zupacademy.thiago.mercadolivre.categoria.Categoria;
+import br.com.zupacademy.thiago.mercadolivre.opiniao.NovaOpiniaoRequest;
 import br.com.zupacademy.thiago.mercadolivre.opiniao.Opiniao;
+import br.com.zupacademy.thiago.mercadolivre.pergunta.NovaPerguntaRequest;
+import br.com.zupacademy.thiago.mercadolivre.pergunta.Pergunta;
 import br.com.zupacademy.thiago.mercadolivre.usuario.Usuario;
 
 import javax.persistence.*;
@@ -53,6 +56,9 @@ public class Produto {
     @OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
     private List<Opiniao> opinioes = new ArrayList<>();
 
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
+    private List<Pergunta> perguntas = new ArrayList<>();
+
     @Column(nullable = false)
     private LocalDateTime dataCadastro;
 
@@ -72,6 +78,10 @@ public class Produto {
         this.categoria = categoria;
         this.usuario = usuario;
         this.dataCadastro = dataCadastro;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
     }
 
     @Override
@@ -103,5 +113,10 @@ public class Produto {
     public void associarOpiniao(NovaOpiniaoRequest novaOpiniao, Usuario usuario) {
         Opiniao opiniao = new Opiniao(novaOpiniao, usuario, this);
         this.opinioes.add(opiniao);
+    }
+
+    public void associarPergunta(NovaPerguntaRequest novaPergunta, Usuario autorPergunta) {
+        Pergunta pergunta = new Pergunta(novaPergunta, autorPergunta, this);
+        this.perguntas.add(pergunta);
     }
 }
