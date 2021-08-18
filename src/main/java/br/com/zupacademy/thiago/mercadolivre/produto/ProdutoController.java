@@ -5,27 +5,29 @@ import br.com.zupacademy.thiago.mercadolivre.opiniao.NovaOpiniaoRequest;
 import br.com.zupacademy.thiago.mercadolivre.pergunta.NovaPerguntaRequest;
 import br.com.zupacademy.thiago.mercadolivre.usuario.Usuario;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.security.Principal;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/api/produtos")
 public class ProdutoController {
 
-    private ProdutoRepository produtoRepository;
-    private CategoriaRepository categoriaRepository;
-    private Uploader uploader;
-    private EmailSender emailSender;
+    private final ProdutoRepository produtoRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final Uploader uploader;
+    private final EmailSender emailSender;
 
-    public ProdutoController(ProdutoRepository produtoRepository, CategoriaRepository categoriaRepository,
-                             Uploader uploader, EmailSender emailSender) {
+    public ProdutoController(ProdutoRepository produtoRepository,
+                             CategoriaRepository categoriaRepository,
+                             Uploader uploader,
+                             EmailSender emailSender) {
         this.produtoRepository = produtoRepository;
         this.categoriaRepository = categoriaRepository;
         this.uploader = uploader;
@@ -33,17 +35,16 @@ public class ProdutoController {
     }
 
     @PostMapping
-    public void cadastrar(@RequestBody @Valid NovoProdutoRequest dto, Principal principal) {
-        Usuario usuario = getUsuarioLogado(principal);
+    public void cadastrar(@RequestBody @Valid NovoProdutoRequest dto, @AuthenticationPrincipal Usuario usuario) {
         Produto produto = dto.toProduto(categoriaRepository, usuario);
         produtoRepository.save(produto);
     }
 
     @PostMapping("/{idProduto}/imagens")
     @Transactional
-    public void uploadImagens(@PathVariable Long idProduto, @Valid NovasImagensRequest dto, Principal principal) {
+    public void uploadImagens(@PathVariable Long idProduto, @Valid NovasImagensRequest dto,
+                              @AuthenticationPrincipal Usuario usuarioLogado) {
 
-        Usuario usuarioLogado = getUsuarioLogado(principal);
         Produto produto = produtoRepository.findById(idProduto).get();
         if (!produto.pertenceA(usuarioLogado)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -57,11 +58,11 @@ public class ProdutoController {
     @PostMapping("/{idProduto}/opinioes")
     @Transactional
     public void cadastrarOpiniao(@PathVariable Long idProduto,
-                                 @RequestBody @Valid NovaOpiniaoRequest novaOpiniao, Principal principal) {
+                                 @RequestBody @Valid NovaOpiniaoRequest novaOpiniao,
+                                 @AuthenticationPrincipal Usuario autorOpiniao) {
 
         Produto produto = produtoRepository.findById(idProduto).get();
-        Usuario usuario = getUsuarioLogado(principal);
-        produto.associarOpiniao(novaOpiniao, usuario);
+        produto.associarOpiniao(novaOpiniao, autorOpiniao);
         produtoRepository.save(produto);
     }
 
@@ -79,10 +80,14 @@ public class ProdutoController {
         emailSender.envia(donoProduto, novaPergunta);
     }
 
-    private Usuario getUsuarioLogado(Principal principal) {
-        UsernamePasswordAuthenticationToken autenticado = (UsernamePasswordAuthenticationToken) principal;
-        Usuario usuario = (Usuario) autenticado.getPrincipal();
-        return usuario;
+    @GetMapping("/{idProduto}")
+    public ResponseEntity<DetalhesProdutoResponse> detalhesProduto(@PathVariable Long idProduto) {
+
+        Optional<Produto> optionalProduto = produtoRepository.findById(idProduto);
+        Produto produto = optionalProduto.orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST)
+        );
+        return ResponseEntity.ok(produto.toDetalhesProdutoResponse());
     }
 
 }

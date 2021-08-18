@@ -32,4 +32,8 @@ public class Pergunta {
         this.produto = produto;
         this.usuario = autorPergunta;
     }
+
+    public String getTitulo() {
+        return titulo;
+    }
 }

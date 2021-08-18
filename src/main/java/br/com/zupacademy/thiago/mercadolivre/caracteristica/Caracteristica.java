@@ -47,4 +47,8 @@ public class Caracteristica {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    public CaracteristicaResponse toCaracteristicaResponse() {
+        return new CaracteristicaResponse(this.nome, this.descricao);
+    }
 }

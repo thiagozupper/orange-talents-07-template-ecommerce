@@ -1,6 +1,7 @@
 package br.com.zupacademy.thiago.mercadolivre.produto;
 
 import br.com.zupacademy.thiago.mercadolivre.caracteristica.Caracteristica;
+import br.com.zupacademy.thiago.mercadolivre.caracteristica.CaracteristicaResponse;
 import br.com.zupacademy.thiago.mercadolivre.caracteristica.NovaCaracteristicaRequest;
 import br.com.zupacademy.thiago.mercadolivre.categoria.Categoria;
 import br.com.zupacademy.thiago.mercadolivre.opiniao.NovaOpiniaoRequest;
@@ -84,6 +85,48 @@ public class Produto {
         return usuario;
     }
 
+    public void associarOpiniao(NovaOpiniaoRequest novaOpiniao, Usuario usuario) {
+        Opiniao opiniao = new Opiniao(novaOpiniao, usuario, this);
+        this.opinioes.add(opiniao);
+    }
+
+    public void associarPergunta(NovaPerguntaRequest novaPergunta, Usuario autorPergunta) {
+        Pergunta pergunta = new Pergunta(novaPergunta, autorPergunta, this);
+        this.perguntas.add(pergunta);
+    }
+
+    public boolean pertenceA(Usuario usuarioLogado) {
+        return this.usuario.equals(usuarioLogado);
+    }
+
+    public void associarLinks(Set<String> links) {
+        Set<ImagemProduto> imagens = links.stream()
+                .map(link -> new ImagemProduto(this, link))
+                .collect(Collectors.toSet());
+        this.imagens.addAll(imagens);
+    }
+
+    public DetalhesProdutoResponse toDetalhesProdutoResponse() {
+
+        Set<String> links = this.imagens.stream()
+                .map(imagemProduto -> imagemProduto.getLink())
+                .collect(Collectors.toSet());
+
+        List<CaracteristicaResponse> caracteristicas = this.caracteristicas.stream()
+                .map(c -> c.toCaracteristicaResponse())
+                .collect(Collectors.toList());
+
+        List<Integer> notas = this.opinioes.stream().map(o -> o.getNota()).collect(Collectors.toList());
+        Integer somatorioNotas = notas.stream().reduce(0, (subtotal, notal) -> subtotal + notal);
+        Integer mediaDasNotas = somatorioNotas / notas.size();
+
+        List<String> opinioes = this.opinioes.stream().map(o -> o.getTitulo()).collect(Collectors.toList());
+        List<String> perguntas = this.perguntas.stream().map(p -> p.getTitulo()).collect(Collectors.toList());
+
+        return new DetalhesProdutoResponse(links, this.nome, this.valor,
+                caracteristicas, this.descricao, mediaDasNotas, notas.size(), opinioes, perguntas);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -97,26 +140,4 @@ public class Produto {
         return Objects.hash(id);
     }
 
-    public boolean pertenceA(Usuario usuarioLogado) {
-        return this.usuario.equals(usuarioLogado);
-    }
-
-
-    public void associarLinks(Set<String> links) {
-
-        Set<ImagemProduto> imagens = links.stream()
-                .map(link -> new ImagemProduto(this, link))
-                .collect(Collectors.toSet());
-        this.imagens.addAll(imagens);
-    }
-
-    public void associarOpiniao(NovaOpiniaoRequest novaOpiniao, Usuario usuario) {
-        Opiniao opiniao = new Opiniao(novaOpiniao, usuario, this);
-        this.opinioes.add(opiniao);
-    }
-
-    public void associarPergunta(NovaPerguntaRequest novaPergunta, Usuario autorPergunta) {
-        Pergunta pergunta = new Pergunta(novaPergunta, autorPergunta, this);
-        this.perguntas.add(pergunta);
-    }
 }
