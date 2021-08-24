@@ -77,7 +77,7 @@ public class ProdutoController {
         produtoRepository.save(produto);
 
         Usuario donoProduto = produto.getUsuario();
-        emailSender.envia(donoProduto, novaPergunta);
+        emailSender.envia(donoProduto, novaPergunta.getTitulo());
     }
 
     @GetMapping("/{idProduto}")

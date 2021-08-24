@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmailSenderFake implements EmailSender {
     @Override
-    public void envia(Usuario donoProduto, NovaPerguntaRequest novaPergunta) {
+    public void envia(Usuario donoProduto, String mensagem) {
 
         System.out.println("Enviando email para: " + donoProduto.getUsername()
-            + " com a pergunta: " + novaPergunta.getTitulo());
+            + " com a mensagem: " + mensagem);
     }
 }

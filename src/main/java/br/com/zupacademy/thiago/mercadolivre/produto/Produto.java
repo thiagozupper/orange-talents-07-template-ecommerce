@@ -85,6 +85,10 @@ public class Produto {
         return usuario;
     }
 
+    public BigDecimal getValor() {
+        return valor;
+    }
+
     public void associarOpiniao(NovaOpiniaoRequest novaOpiniao, Usuario usuario) {
         Opiniao opiniao = new Opiniao(novaOpiniao, usuario, this);
         this.opinioes.add(opiniao);
@@ -125,6 +129,10 @@ public class Produto {
 
         return new DetalhesProdutoResponse(links, this.nome, this.valor,
                 caracteristicas, this.descricao, mediaDasNotas, notas.size(), opinioes, perguntas);
+    }
+
+    public void darBaixaEstoque(int quantidade) {
+        this.quantidadeDisponivel -= quantidade;
     }
 
     @Override

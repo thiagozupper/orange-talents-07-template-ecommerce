@@ -5,5 +5,5 @@ import br.com.zupacademy.thiago.mercadolivre.usuario.Usuario;
 
 public interface EmailSender {
 
-    public void envia(Usuario donoProduto, NovaPerguntaRequest novaPergunta);
+    public void envia(Usuario donoProduto, String novaPergunta);
 }
