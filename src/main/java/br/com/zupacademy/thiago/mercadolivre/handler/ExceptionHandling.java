@@ -57,6 +57,12 @@ public class ExceptionHandling {
             erros.add(erroValidacao);
         });
 
+        //Só para ver retornar mensagem de que se tentou comfirmar um pagamento
+        //que já estava confirmado com sucesso.
+        if (erros.size() == 0) {
+            erros.add(new ErroValidacao("idDoPagamentoNoMeioDePagamento",
+                    ex.getBindingResult().getGlobalErrors().get(0).getDefaultMessage()));
+        }
         return erros;
     }
 

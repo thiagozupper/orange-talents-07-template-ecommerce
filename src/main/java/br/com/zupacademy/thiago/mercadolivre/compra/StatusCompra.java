@@ -2,7 +2,8 @@ package br.com.zupacademy.thiago.mercadolivre.compra;
 
 public enum StatusCompra {
 
-    INICIADA(1);
+    INICIADA(1),
+    FINALIZADA_COM_SUCESSO(2);
 
     private int codigo;
 
